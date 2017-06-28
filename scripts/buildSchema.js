@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const schemaMarkdownPath = path.resolve('data', 'TUTORIAL.md');
+const schemaMarkdownPath = path.resolve('data', 'TRAVELAPP.md');
 const schemaMarkdownFile = fs.readFileSync(schemaMarkdownPath, 'utf8');
 
 // State for our filterer.
@@ -11,13 +11,13 @@ let isInsideMarkdownSQLCode = false;
 
 // Create a file with just our schema’s SQL.
 const schemaSQLFile = `
--- This file was automatically generated from the \`TUTORIAL.md\` which
+-- This file was automatically generated from the \`TRAVELAPP.md\` which
 -- contains a complete explanation of how this schema works and why certain
 -- decisions were made. If you are looking for a comprehensive tutorial,
 -- definetly check it out as this file is a little tough to read.
 --
 -- If you want to contribute to this file, please change the
--- \`TUTORIAL.md\` file and then rebuild this file :)
+-- \`TRAVELAPP.md\` file and then rebuild this file :)
 
 begin;
 

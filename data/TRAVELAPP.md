@@ -1,16 +1,37 @@
--- This file was automatically generated from the `TUTORIAL.md` which
--- contains a complete explanation of how this schema works and why certain
--- decisions were made. If you are looking for a comprehensive tutorial,
--- definetly check it out as this file is a little tough to read.
---
--- If you want to contribute to this file, please change the
--- `TUTORIAL.md` file and then rebuild this file :)
+# TravelApp Schema
 
-begin;
+## Table of Contents
+- [The Basics](#the-basics)
+  - [Setting Up Your Schemas](#setting-up-your-schemas)
+  - [The Person Table](#the-person-table)
+  - [Table Documentation](#table-documentation)
+  - [The Post Table](#the-post-table)
+- [Database Functions](#database-functions)
+  - [Set Returning Functions](#set-returning-functions)
+  - [Triggers](#triggers)
+- [Authentication and Authorization](#authentication-and-authorization)
+  - [Storing Emails and Passwords](#storing-emails-and-passwords)
+  - [Registering Users](#registering-users)
+  - [Postgres Roles](#postgres-roles)
+  - [JSON Web Tokens](#json-web-tokens)
+  - [Logging In](#logging-in)
+  - [Using the Authorized User](#using-the-authorized-user)
+  - [Grants](#grants)
+  - [Row Level Security](#row-level-security)
+- [Conclusion](#conclusion)
 
+## The Basics
+
+### Schemas
+
+```sql
 create schema travelapp;
 create schema travelapp_private;
+```
 
+### The Person Table
+
+```sql
 create table travelapp.person (
   id                  serial primary key,
   main_photo          text,
@@ -46,7 +67,11 @@ create table travelapp.person (
   contacts            text,
   created_at          timestamp default now()
 );
+```
 
+### Table Documentation
+
+```sql
 comment on table travelapp.person is 'A user of the TravelApp.';
 comment on column travelapp.person.id is 'The primary unique identifier for the person.';
 comment on column travelapp.person.main_photo is 'The persons main photo.';
@@ -81,7 +106,11 @@ comment on column travelapp.person.groups is 'The person’s groups.';
 comment on column travelapp.person.type_of_traveler is 'The person’s type of traveler.';
 comment on column travelapp.person.contacts is 'The person’s contacts.';
 comment on column travelapp.person.created_at is 'The time this person was created.';
+```
 
+### The Trip Table
+
+```sql
 create table travelapp.trip (
   id                  serial primary key,
   organizer_id        integer not null references travelapp.person(id),
@@ -138,7 +167,11 @@ comment on column travelapp.trip.inventory is 'The trip’s inventory.';
 comment on column travelapp.trip.chat is 'The trip’s chat.';
 comment on column travelapp.trip.attire_dress_code is 'The trip’s attire & dress code.';
 comment on column travelapp.trip.created_at is 'The time this trip was created.';
+```
 
+### The Activity Table
+
+```sql
 create table travelapp.activity (
   id                    serial primary key,
   organizer_id          integer not null references travelapp.person(id),
@@ -183,7 +216,11 @@ comment on column travelapp.activity.attire_dress_code is 'The activity’s atti
 comment on column travelapp.activity.multi_day_event is 'Is the activity a multi day event.';
 comment on column travelapp.activity.post_activity_reviews is 'The activity’s post reviews.';
 comment on column travelapp.activity.created_at is 'The time this activity was created.';
+```
 
+### The Events Table
+
+```sql
 create table travelapp.event (
   id                serial primary key,
   organizer_id      integer not null references travelapp.person(id),
@@ -226,13 +263,19 @@ comment on column travelapp.event.supplies is 'The event’s supplies.';
 comment on column travelapp.event.attire_dress_code is 'The event’s attire & dress code.';
 comment on column travelapp.event.multi_day_event is 'Is the event a multi day event.';
 comment on column travelapp.event.created_at is 'The time this event was created.';
+```
 
+## Computed Fields
+
+```sql
 create function travelapp.person_full_name(person travelapp.person) returns text as $$
   select person.first_name || ' ' || person.last_name
 $$ language sql stable;
 
 comment on function travelapp.person_full_name(travelapp.person) is 'A person’s full name which is a concatenation of their first and last name.';
+```
 
+```sql
 create function travelapp.trip_summary(
   trip travelapp.trip,
   length int default 50,
@@ -245,7 +288,9 @@ create function travelapp.trip_summary(
 $$ language sql stable;
 
 comment on function travelapp.trip_summary(travelapp.trip, int, text) is 'A truncated version of the description for summaries.';
+```
 
+```sql
 create function travelapp.activity_summary(
   activity travelapp.activity,
   length int default 50,
@@ -258,7 +303,9 @@ create function travelapp.activity_summary(
 $$ language sql stable;
 
 comment on function travelapp.activity_summary(travelapp.activity, int, text) is 'A truncated version of the description for summaries.';
+```
 
+```sql
 create function travelapp.event_summary(
   event travelapp.event,
   length int default 50,
@@ -271,7 +318,9 @@ create function travelapp.event_summary(
 $$ language sql stable;
 
 comment on function travelapp.event_summary(travelapp.event, int, text) is 'A truncated version of the description for summaries.';
+```
 
+```sql
 create function travelapp.person_latest_trip(person travelapp.person) returns travelapp.trip as $$
   select trip.*
   from travelapp.trip as trip
@@ -281,7 +330,9 @@ create function travelapp.person_latest_trip(person travelapp.person) returns tr
 $$ language sql stable;
 
 comment on function travelapp.person_latest_trip(travelapp.person) is 'Get’s the latest trip organized by the person.';
+```
 
+```sql
 create function travelapp.person_latest_activity(person travelapp.person) returns travelapp.activity as $$
   select activity.*
   from travelapp.activity as activity
@@ -291,7 +342,9 @@ create function travelapp.person_latest_activity(person travelapp.person) return
 $$ language sql stable;
 
 comment on function travelapp.person_latest_activity(travelapp.person) is 'Get’s the latest activity organized by the person.';
+```
 
+```sql
 create function travelapp.person_latest_event(person travelapp.person) returns travelapp.event as $$
   select event.*
   from travelapp.event as event
@@ -301,7 +354,11 @@ create function travelapp.person_latest_event(person travelapp.person) returns t
 $$ language sql stable;
 
 comment on function travelapp.person_latest_event(travelapp.person) is 'Get’s the latest event organized by the person.';
+```
 
+### Searches
+
+```sql
 create function travelapp.search_trips(search text) returns setof travelapp.trip as $$
   select trip.*
   from travelapp.trip as trip
@@ -309,7 +366,9 @@ create function travelapp.search_trips(search text) returns setof travelapp.trip
 $$ language sql stable;
 
 comment on function travelapp.search_trips(text) is 'Returns trips containing a given search term.';
+```
 
+```sql
 create function travelapp.search_activities(search text) returns setof travelapp.activity as $$
   select activity.*
   from travelapp.activity as activity
@@ -317,7 +376,9 @@ create function travelapp.search_activities(search text) returns setof travelapp
 $$ language sql stable;
 
 comment on function travelapp.search_activities(text) is 'Returns activities containing a given search term.';
+```
 
+```sql
 create function travelapp.search_events(search text) returns setof travelapp.event as $$
   select event.*
   from travelapp.event as event
@@ -325,12 +386,18 @@ create function travelapp.search_events(search text) returns setof travelapp.eve
 $$ language sql stable;
 
 comment on function travelapp.search_events(text) is 'Returns events containing a given search term.';
+```
 
+### Triggers
+
+```sql
 alter table travelapp.person add column updated_at timestamp default now();
 alter table travelapp.trip add column updated_at timestamp default now();
 alter table travelapp.activity add column updated_at timestamp default now();
 alter table travelapp.event add column updated_at timestamp default now();
+```
 
+```sql
 create function travelapp_private.set_updated_at() returns trigger as $$
 begin
   new.updated_at := current_timestamp;
@@ -357,7 +424,16 @@ create trigger event_updated_at before update
   on travelapp.event
   for each row
   execute procedure travelapp_private.set_updated_at();
+```
 
+
+* * *
+
+## Authentication and Authorization
+
+### Storing Emails and Passwords
+
+```sql
 create table travelapp_private.person_account (
   person_id        integer primary key references travelapp.person(id) on delete cascade,
   email            text not null unique check (email ~* '^.+@.+\..+$'),
@@ -368,9 +444,15 @@ comment on table travelapp_private.person_account is 'Private information about 
 comment on column travelapp_private.person_account.person_id is 'The id of the person associated with this account.';
 comment on column travelapp_private.person_account.email is 'The email address of the person.';
 comment on column travelapp_private.person_account.password_hash is 'An opaque hash of the person’s password.';
+```
 
+### Registering Users
+
+```sql
 create extension if not exists "pgcrypto";
+```
 
+```sql
 create function travelapp.register_person(
   first_name text,
   last_name text,
@@ -392,20 +474,61 @@ end;
 $$ language plpgsql strict security definer;
 
 comment on function travelapp.register_person(text, text, text, text) is 'Registers a single user and creates an account in our forum.';
+```
 
+### Postgres Roles
+
+```sql
 create role travelapp_postgraphql login password 'WzTvpViyx7hOR9LTrO4zF2OEs2Lzc8ynX1gawnzr90ZS';
+```
 
+```bash
+postgraphql -c postgres://travelapp_postgraphql:WzTvpViyx7hOR9LTrO4zF2OEs2Lzc8ynX1gawnzr90ZS@localhost:5432/mydb
+```
+
+```sql
 create role travelapp_anonymous;
 grant travelapp_anonymous to travelapp_postgraphql;
+```
 
+```bash
+postgraphql \
+  --connection postgres://travelapp_postgraphql:WzTvpViyx7hOR9LTrO4zF2OEs2Lzc8ynX1gawnzr90ZS@localhost:5432/mydb \
+  --default-role travelapp_anonymous
+```
+
+```sql
 create role travelapp_person;
 grant travelapp_person to travelapp_postgraphql;
+```
 
+### JSON Web Tokens
+
+ ```sql
+set local jwt.claims.a to 1;
+set local jwt.claims.b to 2;
+set local jwt.claims.c to 3;
+```
+
+ ```sql
+select current_setting('jwt.claims.a');
+```
+
+ ```sql
+set local role to 'travelapp_person'
+set local jwt.claims.role to 'travelapp_person'
+```
+
+### Logging In
+
+```sql
 create type travelapp.jwt_token as (
   role text,
   person_id integer
 );
+```
 
+```sql
 create function travelapp.authenticate(
   email text,
   password text
@@ -426,7 +549,25 @@ end;
 $$ language plpgsql strict security definer;
 
 comment on function travelapp.authenticate(text, text) is 'Creates a JWT token that will securely identify a person and give them certain permissions.';
+```
 
+```plpgsql
+select a.* into account
+from travelapp_private.person_account as a
+where a.email = $1;
+```
+
+```plpgsql
+if account.password_hash = crypt(password, account.password_hash) then
+  return ('travelapp_person', account.person_id)::travelapp.jwt_token;
+else
+  return null;
+end if;
+```
+
+### Using the Authorized User
+
+```sql
 create function travelapp.current_person() returns travelapp.person as $$
   select *
   from travelapp.person
@@ -434,7 +575,11 @@ create function travelapp.current_person() returns travelapp.person as $$
 $$ language sql stable;
 
 comment on function travelapp.current_person() is 'Gets the person who was identified by our JWT.';
+```
 
+### Grants
+
+```sql
 -- after schema creation and before function creation
 alter default privileges revoke execute on functions from public;
 
@@ -473,12 +618,16 @@ grant execute on function travelapp.authenticate(text, text) to travelapp_anonym
 grant execute on function travelapp.current_person() to travelapp_anonymous, travelapp_person;
 
 grant execute on function travelapp.register_person(text, text, text, text) to travelapp_anonymous;
+```
 
+```sql
 alter table travelapp.person enable row level security;
 alter table travelapp.trip enable row level security;
 alter table travelapp.activity enable row level security;
 alter table travelapp.event enable row level security;
+```
 
+```sql
 create policy select_person on travelapp.person for select
   using (true);
 
@@ -490,13 +639,17 @@ create policy select_activity on travelapp.activity for select
 
 create policy select_event on travelapp.event for select
   using (true);
+```
 
+```sql
 create policy update_person on travelapp.person for update to travelapp_person
   using (id = current_setting('jwt.claims.person_id')::integer);
 
 create policy delete_person on travelapp.person for delete to travelapp_person
   using (id = current_setting('jwt.claims.person_id')::integer);
+```
 
+```sql
 create policy insert_trip on travelapp.trip for insert to travelapp_person
   with check (organizer_id = current_setting('jwt.claims.person_id')::integer);
 
@@ -505,7 +658,9 @@ create policy update_trip on travelapp.trip for update to travelapp_person
 
 create policy delete_trip on travelapp.trip for delete to travelapp_person
   using (organizer_id = current_setting('jwt.claims.person_id')::integer);
+```
 
+```sql
 create policy insert_activity on travelapp.activity for insert to travelapp_person
   with check (organizer_id = current_setting('jwt.claims.person_id')::integer);
 
@@ -514,7 +669,9 @@ create policy update_activity on travelapp.activity for update to travelapp_pers
 
 create policy delete_activity on travelapp.activity for delete to travelapp_person
   using (organizer_id = current_setting('jwt.claims.person_id')::integer);
+```
 
+```sql
 create policy insert_event on travelapp.event for insert to travelapp_person
   with check (organizer_id = current_setting('jwt.claims.person_id')::integer);
 
@@ -523,6 +680,16 @@ create policy update_event on travelapp.event for update to travelapp_person
 
 create policy delete_event on travelapp.event for delete to travelapp_person
   using (organizer_id = current_setting('jwt.claims.person_id')::integer);
+```
 
+```bash
+postgraphql \
+  --connection postgres://travelapp_postgraphql:WzTvpViyx7hOR9LTrO4zF2OEs2Lzc8ynX1gawnzr90ZS@localhost:5432 \
+  --schema travelapp \
+  --default-role travelapp_anonymous \
+  --secret FavM5nxm8uHdc5A5kSK4dOZbinr1GKGoxtOMhwPihZg72VUVDoi8ponM1QQCVkVB1UZ38G4h3r75H7oKiVy4gcBUUbRgv9uNMc5 \
+  --token travelapp.jwt_token
+```
 
-commit;
+* * *
+
