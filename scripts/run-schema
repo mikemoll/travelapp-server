@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e
-
-scripts/buildSchema
-
-psql -f schema-drop.sql $@
-psql -f schema.sql $@
-psql -f data.sql $@

@@ -1,36 +1,47 @@
 {
   "name": "travelapp-server",
   "version": "0.0.1",
-  "description": "TravelApp - GraphQL/PostgreSQL - [PostGraphQL] - Back-End Server",
+  "description": "TravelApp - GraphQL/PostgreSQL - Back-End Server",
   "engines": {
     "node": ">=7.10.0",
     "npm": "^4.2.0"
   },
-  "main": "server",
+  "main": "index.js",
   "scripts": {
-    "schema:1:build": "node scripts/buildSchema",
-    "schema:2:down": "psql -f data/schema-drop.sql",
-    "schema:3:up": "psql -f data/schema.sql",
-    "schema:4:data": "psql -f data/data.sql",
-    "postinstall": "npm-run-all schema:**",
-    "server": "node ./server",
-    "start": "concurrently \"npm run server\" \"npm run update-schema\"",
-    "update-schema": "node scripts/updateSchema"
+    "start": "node ./index"
   },
   "author": "Bartek Kus <bartekus@gmail.com> (https://bartekus.com)",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.16.1",
-    "concurrently": "^3.4.0",
+    "bcrypt": "^1.0.2",
+    "body-parser": "^1.17.2",
     "cors": "^2.8.3",
     "dotenv": "^4.0.0",
-    "express": "^4.15.2",
-    "fs-promise": "^2.0.2",
-    "graphql": "^0.9.3",
-    "npm-run-all": "^4.0.2",
+    "express": "^4.15.3",
+    "express-jwt": "^5.3.0",
+    "faker": "^4.1.0",
+    "graphql": "^0.10.1",
+    "graphql-date": "^1.0.3",
+    "graphql-server-express": "^0.8.0",
+    "graphql-subscriptions": "^0.4.2",
+    "graphql-tools": "^1.0.0",
+    "jsonwebtoken": "^7.4.1",
+    "lodash": "^4.17.4",
     "pg": "^6.1.5",
-    "postgraphql": "3.2.0",
-    "system-sleep": "^1.3.0"
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.30.4",
+    "subscriptions-transport-ws": "^0.7.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^15.0.1",
+    "eslint-plugin-import": "^2.3.0",
+    "eslint-plugin-jsx-a11y": "^5.0.3",
+    "eslint-plugin-react": "^7.0.1"
+  }
 }
